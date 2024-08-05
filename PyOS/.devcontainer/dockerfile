@@ -1,0 +1,6 @@
+# Dockerfile
+FROM mcr.microsoft.com/vscode/devcontainers/base:ubuntu
+
+# Install NASM and QEMU
+RUN apt-get update \
+    && apt-get install -y nasm qemu

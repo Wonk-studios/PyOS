@@ -7,4 +7,7 @@ PyOS is a rudimentary python interpreter operating system I started in 2024 as a
 How to use:
 
 >[!IMPORTANT]
->The operating system has not been written.
+>The operating system has not been fully written. Do not download the operating system until it has been written.
+>THIS CODE IS WORK IN PROGRESS!
+
+DO NOT REMOVE THE LICENSE!
