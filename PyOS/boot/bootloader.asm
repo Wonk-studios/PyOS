@@ -31,8 +31,36 @@ start:
     mov bx, 0x1000
     int 0x13
 
+    ; Check for errors
+    jc disk_read_error
+
+    ; Verify the kernel loaded correctly (simple checksum or magic number check)
+    mov ax, 0x1000
+    cmp word [ax], 0xAA55
+    jne invalid_kernel
+
     ; Jump to the kernel
     jmp 0x1000:0000
+
+disk_read_error:
+    mov si, disk_read_error_msg
+    call print_string
+    hlt
+
+invalid_kernel:
+    mov si, invalid_kernel_msg
+    call print_string
+    hlt
+
+bios_interrupt_error:
+    mov si, bios_interrupt_error_msg
+    call print_string
+    hlt
+
+unknown_error:
+    mov si, unknown_error_msg
+    call print_string
+    hlt
 
 print_string:
     mov ah, 0x0E
@@ -45,7 +73,11 @@ print_string:
 .done:
     ret
 
-loading_msg db 'Loading PyOS...', 0
+loading_msg db 'ROOTDEVICE/root/PyOS/', 0
+disk_read_error_msg db 'Error VH01: DISK READ ERROR. STOP.', 0
+invalid_kernel_msg db 'Error VH52: INVALID KERNEL DETECTED. CANNOT LOAD. STOP.', 0
+bios_interrupt_error_msg db 'Error VH03: BIOS INTERRUPT ERROR. STOP.', 0
+unknown_error_msg db 'ERROR STOP.', 0
 
 times 510 - ($ - $$) db 0
 dw 0xAA55
