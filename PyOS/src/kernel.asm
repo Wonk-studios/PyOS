@@ -1,23 +1,24 @@
-; kernel.asm
-BITS 16
-ORG 0x1000
+[BITS 16]
+[ORG 0x1000]
 
 start:
-    ; Set up the segment registers
-    mov ax, 0x1000
-    mov ds, ax
-    mov es, ax
+    ; Print kernel loaded message
+    mov si, kernel_msg
+    call print_string
 
-    ; Print "PyOS 1.0"
-    mov si, msg_hello
-print_msg:
-    lodsb
-    or al, al
-    jz halt
-    mov ah, 0x0E
-    int 0x10
-    jmp print_msg
-halt:
+    ; Halt the CPU
     hlt
+    jmp $
 
-msg_hello db 'PyOS 1.0', 0
+print_string:
+    mov ah, 0x0E
+.repeat:
+    lodsb
+    cmp al, 0
+    je .done
+    int 0x10
+    jmp .repeat
+.done:
+    ret
+
+kernel_msg db 'PyOS!', 0

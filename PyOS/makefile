@@ -1,21 +1,20 @@
-# Makefile
 BOOT = boot/bootloader.asm
 KERNEL = src/kernel.asm
 
 all: os-image
 
 os-image: bootloader.bin kernel.bin
-	# Combine bootloader and kernel into a single OS image
+	# Use tab instead of spaces here
 	cat bootloader.bin kernel.bin > os-image
 
 bootloader.bin: $(BOOT)
-	# Assemble the bootloader
+	# Use tab instead of spaces here
 	nasm -f bin -o bootloader.bin $(BOOT)
 
 kernel.bin: $(KERNEL)
-	# Assemble the kernel
+	# Use tab instead of spaces here
 	nasm -f bin -o kernel.bin $(KERNEL)
 
 clean:
-	# Remove the generated files
+	# Use tab instead of spaces here
 	rm -f *.bin os-image
