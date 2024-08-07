@@ -2,6 +2,7 @@
 [ORG 0x7C00]
 
 start:
+    ; Set up stack and segment registers
     mov ax, 0x07C0
     add ax, 288
     mov ss, ax
@@ -11,6 +12,7 @@ start:
     mov ds, bp
     mov es, bp
 
+    ; Disable and then enable interrupts
     cli
     mov ax, 0x2400
     mov ds, ax
@@ -73,7 +75,7 @@ print_string:
 .done:
     ret
 
-loading_msg db 'ROOTDEVICE/root/PyOS/', 0
+loading_msg db 'Loading PyOS...', 0
 disk_read_error_msg db 'Error VH01: DISK READ ERROR. STOP.', 0
 invalid_kernel_msg db 'Error VH52: INVALID KERNEL DETECTED. CANNOT LOAD. STOP.', 0
 bios_interrupt_error_msg db 'Error VH03: BIOS INTERRUPT ERROR. STOP.', 0

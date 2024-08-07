@@ -1,20 +1,50 @@
-BOOT = boot/bootloader.asm
-KERNEL = src/kernel.asm
+# Makefile for building PyOS
 
-all: os-image
+# Paths
+BOOTLOADER_SRC = boot/bootloader.asm
+KERNEL_SRC = src/kernel.asm
+INTERPRETER_SRC = PyOS/interpret/interpreter.c
+BOOTLOADER_BIN = bootloader.bin
+KERNEL_BIN = kernel.bin
+INTERPRETER_BIN = interpreter
 
-os-image: bootloader.bin kernel.bin
-	# Use tab instead of spaces here
-	cat bootloader.bin kernel.bin > os-image
+# Tools
+ASM = nasm
+CC = gcc
+LD = ld
+OBJCOPY = objcopy
 
-bootloader.bin: $(BOOT)
-	# Use tab instead of spaces here
-	nasm -f bin -o bootloader.bin $(BOOT)
+# Flags
+ASM_FLAGS = -f bin
+CC_FLAGS = -ffreestanding -c -o
+LD_FLAGS = -Ttext 0x1000 --oformat binary
+OBJ_FLAGS = -O binary
 
-kernel.bin: $(KERNEL)
-	# Use tab instead of spaces here
-	nasm -f bin -o kernel.bin $(KERNEL)
+# Targets
+all: $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN) PyOS.iso
+
+$(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
+	$(ASM) $(ASM_FLAGS) $< -o $@
+
+$(KERNEL_BIN): $(KERNEL_SRC)
+	$(ASM) $(ASM_FLAGS) $< -o $@
+
+$(INTERPRETER_BIN): $(INTERPRETER_SRC)
+	$(CC) $(INTERPRETER_SRC) -o $(INTERPRETER_BIN)
+
+PyOS.iso: $(BOOTLOADER_BIN) $(KERNEL_BIN) 
+	mkdir -p iso/boot/grub
+	cp $(BOOTLOADER_BIN) iso/boot/
+	cp $(KERNEL_BIN) iso/boot/
+	echo 'set timeout=0' > iso/boot/grub/grub.cfg
+	echo 'set default=0' >> iso/boot/grub/grub.cfg
+	echo 'menuentry "PyOS" {' >> iso/boot/grub/grub.cfg
+	echo '    multiboot /boot/kernel.bin' >> iso/boot/grub/grub.cfg
+	echo '}' >> iso/boot/grub/grub.cfg
+	grub-mkrescue -o PyOS.iso iso
 
 clean:
-	# Use tab instead of spaces here
-	rm -f *.bin os-image
+	rm -f $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN) PyOS.iso
+	rm -rf iso
+
+.PHONY: all clean
