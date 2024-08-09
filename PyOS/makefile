@@ -1,50 +1,45 @@
-# Makefile for building PyOS
-
-# Paths
-BOOTLOADER_SRC = boot/bootloader.asm
-KERNEL_SRC = src/kernel.asm
-INTERPRETER_SRC = PyOS/interpret/interpreter.c
-BOOTLOADER_BIN = bootloader.bin
-KERNEL_BIN = kernel.bin
-INTERPRETER_BIN = interpreter
-
-# Tools
+# Define variables
 ASM = nasm
 CC = gcc
 LD = ld
-OBJCOPY = objcopy
-
-# Flags
 ASM_FLAGS = -f bin
-CC_FLAGS = -ffreestanding -c -o
-LD_FLAGS = -Ttext 0x1000 --oformat binary
-OBJ_FLAGS = -O binary
+CFLAGS = -ffreestanding -O2 -Wall -Wextra
+LDFLAGS = -T linker.ld -nostdlib
 
-# Targets
-all: $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN) PyOS.iso
+# Output binaries
+BOOTLOADER_BIN = bootloader.bin
+KERNEL_BIN = kernel.bin
+OS_IMAGE = pyos.img
+
+# Directories
+BOOT_DIR = boot
+KERNEL_DIR = kernel
+INTERPRETER_DIR = root/PyOS/interpret
+SCRIPT_DIR = root/PyOS/interpret/script
+
+# Source files
+BOOTLOADER_SRC = $(BOOT_DIR)/bootloader.asm
+KERNEL_SRC = $(KERNEL_DIR)/kernel.asm
+INTERPRETER_SRC = $(INTERPRETER_DIR)/interpreter.c
+
+# Build rules
+all: $(OS_IMAGE)
 
 $(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
-	$(ASM) $(ASM_FLAGS) $< -o $@
+	$(ASM) $(ASM_FLAGS) $(BOOTLOADER_SRC) -o $(BOOT_DIR)/$(BOOTLOADER_BIN)
 
 $(KERNEL_BIN): $(KERNEL_SRC)
-	$(ASM) $(ASM_FLAGS) $< -o $@
+	$(ASM) $(ASM_FLAGS) $(KERNEL_SRC) -o $(KERNEL_DIR)/$(KERNEL_BIN)
 
-$(INTERPRETER_BIN): $(INTERPRETER_SRC)
-	$(CC) $(INTERPRETER_SRC) -o $(INTERPRETER_BIN)
+$(INTERPRETER_DIR)/interpreter.bin: $(INTERPRETER_SRC)
+	$(CC) $(CFLAGS) -c $(INTERPRETER_SRC) -o $(INTERPRETER_DIR)/interpreter.o
+	$(LD) $(LDFLAGS) -o $(INTERPRETER_DIR)/interpreter.bin $(INTERPRETER_DIR)/interpreter.o
 
-PyOS.iso: $(BOOTLOADER_BIN) $(KERNEL_BIN) 
-	mkdir -p iso/boot/grub
-	cp $(BOOTLOADER_BIN) iso/boot/
-	cp $(KERNEL_BIN) iso/boot/
-	echo 'set timeout=0' > iso/boot/grub/grub.cfg
-	echo 'set default=0' >> iso/boot/grub/grub.cfg
-	echo 'menuentry "PyOS" {' >> iso/boot/grub/grub.cfg
-	echo '    multiboot /boot/kernel.bin' >> iso/boot/grub/grub.cfg
-	echo '}' >> iso/boot/grub/grub.cfg
-	grub-mkrescue -o PyOS.iso iso
+$(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_DIR)/interpreter.bin
+	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=2880
+	dd if=$(BOOT_DIR)/$(BOOTLOADER_BIN) of=$(OS_IMAGE) conv=notrunc
+	dd if=$(KERNEL_DIR)/$(KERNEL_BIN) of=$(OS_IMAGE) seek=1 conv=notrunc
+	dd if=$(INTERPRETER_DIR)/interpreter.bin of=$(OS_IMAGE) seek=2 conv=notrunc
 
 clean:
-	rm -f $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN) PyOS.iso
-	rm -rf iso
-
-.PHONY: all clean
+	rm -f $(BOOT_DIR)/*.bin $(KERNEL_DIR)/*.bin $(INTERPRETER_DIR)/*.o $(INTERPRETER_DIR)/*.bin $(OS_IMAGE)
