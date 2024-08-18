@@ -43,7 +43,7 @@ unknown_error:
     hlt
 
 kernel_msg db '...', 0
-kernel_error_msg db 'Kernel encountered an error.', 0
-kernel_initialization_error_msg db 'Error VH21: KERNEL INITIALIZATION ERROR. STOP.', 0
-memory_allocation_error_msg db 'Error VH22: MEMORY ALLOCATION ERROR. STOP.', 0
+kernel_error_msg db 'ERROR VH05 UNKNOWN KERNEL ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
+kernel_initialization_error_msg db 'Error VH21: KERNEL INITIALIZATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
+memory_allocation_error_msg db 'Error VH22: MEMORY ALLOCATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
 unknown_error_msg db 'ERROR STOP.', 0

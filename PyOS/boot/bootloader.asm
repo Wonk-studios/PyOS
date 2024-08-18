@@ -38,7 +38,8 @@ start:
 
     ; Verify the kernel loaded correctly (simple checksum or magic number check)
     mov ax, 0x1000
-    cmp word [ax], 0xAA55
+    mov bx, 0xAA55  ; Use bx for the magic number
+    cmp word [ax], bx
     jne invalid_kernel
 
     ; Jump to the kernel
