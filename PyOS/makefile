@@ -22,16 +22,20 @@ BOOTLOADER_SRC = $(BOOT_DIR)/bootloader.asm
 KERNEL_SRC = $(KERNEL_DIR)/kernel.asm
 INTERPRETER_SRC = $(INTERPRETER_DIR)/interpreter.c
 
+# Ensure directories exist
+$(BOOT_DIR) $(KERNEL_DIR) $(INTERPRETER_DIR):
+	mkdir -p $@
+
 # Build rules
 all: $(OS_IMAGE)
 
-$(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
+$(BOOTLOADER_BIN): $(BOOTLOADER_SRC) | $(BOOT_DIR)
 	$(ASM) $(ASM_FLAGS) $(BOOTLOADER_SRC) -o $(BOOT_DIR)/$(BOOTLOADER_BIN)
 
-$(KERNEL_BIN): $(KERNEL_SRC)
+$(KERNEL_BIN): $(KERNEL_SRC) | $(KERNEL_DIR)
 	$(ASM) $(ASM_FLAGS) $(KERNEL_SRC) -o $(KERNEL_DIR)/$(KERNEL_BIN)
 
-$(INTERPRETER_DIR)/interpreter.bin: $(INTERPRETER_SRC)
+$(INTERPRETER_DIR)/interpreter.bin: $(INTERPRETER_SRC) | $(INTERPRETER_DIR)
 	$(CC) $(CFLAGS) -c $(INTERPRETER_SRC) -o $(INTERPRETER_DIR)/interpreter.o
 	$(LD) $(LDFLAGS) -o $(INTERPRETER_DIR)/interpreter.bin $(INTERPRETER_DIR)/interpreter.o
 
