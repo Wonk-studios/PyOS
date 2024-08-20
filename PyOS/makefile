@@ -8,7 +8,7 @@ CFLAGS = -ffreestanding -O2 -Wall -Wextra
 LDFLAGS = -T linker.ld -nostdlib
 
 # Output binaries
-BOOTLOADER_BIN = bootloader.bin
+BOOTLOADER_BIN = bootloader.bin #NASM seems to dislike this line, possibly because the bootloader has problems. If after fixing the bootloader, theres still problems, We can look into that.
 KERNEL_BIN = kernel.bin
 INTERPRETER_BIN = interpreter.bin
 OS_IMAGE = pyos.img
