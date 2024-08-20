@@ -1,49 +1,36 @@
-[BITS 16]
-[ORG 0x1000]
+[BITS 32]
 
-start:
-    ; Print kernel loaded message
-    mov si, kernel_msg
-    call print_string
+protected_mode_start:
+    ; Set segment registers for protected mode
+    mov ax, 0x10            ; Data segment selector
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov esp, 0x9C00         ; Set stack pointer
 
-    ; Jump to main C code
-    call run_main
+    ; Call the kernel's entry point
+    call kernel_main
 
-    ; Halt the CPU
-    hlt
-    jmp $
+hang:
+    hlt                     ; Halt CPU
+    jmp hang
 
-print_string:
-    mov ah, 0x0E
-.repeat:
-    lodsb
-    cmp al, 0
-    je .done
-    int 0x10
-    jmp .repeat
-.done:
-    ret
+gdt_start:
+    dd 0                    ; Null descriptor
+    dd 0
 
-run_main:
-    ; Jump to the C code entry point
-    call main
-    ; Check if main returned an error
-    test ax, ax
-    jnz kernel_error
-    ret
+    dd 0x0000FFFF           ; Code segment descriptor
+    dd 0x00CF9A00
 
-kernel_error:
-    mov si, kernel_error_msg
-    call print_string
-    hlt
+    dd 0x0000FFFF           ; Data segment descriptor
+    dd 0x00CF9200
 
-unknown_error:
-    mov si, unknown_error_msg
-    call print_string
-    hlt
+gdt_descriptor:
+    dw gdt_end - gdt_start - 1
+    dd gdt_start
+gdt_end:
 
-kernel_msg db '...', 0
-kernel_error_msg db 'ERROR VH05 UNKNOWN KERNEL ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
-kernel_initialization_error_msg db 'Error VH21: KERNEL INITIALIZATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
-memory_allocation_error_msg db 'Error VH22: MEMORY ALLOCATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
-unknown_error_msg db 'ERROR STOP.', 0
+times 510 - ($ - $$) db 0
+dw 0xAA55                   ; Boot signature
