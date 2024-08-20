@@ -1,6 +1,6 @@
-## MIT License
+# MIT License
 
-# Copyright (c) 2024 Wonk studios
+## Copyright (c) 2024 Wonk studios
 
 >[!IMPORTANT]
 >DO NOT REMOVE THE LICENSE FILE, EVEN AFTER DOWNLOADING THE OS!
