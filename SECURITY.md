@@ -2,23 +2,23 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+All versions that have security updates are here.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.3.D   | :x:                |
-| 1.2.D   | :x:                |
+>[!IMPORTANT]
+>Any versions that are not supported are not end of lifed yet.
+
+| Version | Supported          |Comments             |
+| ------- | ------------------ |---------------------|
+| 1.3.D   | :x:                |                     |
+| 1.2.D   | :x:                |                     |
 | 1.1.D   | :x:                |
-| < 1.0.D   | :x:              |
+| < 1.0.D | :x:                |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+To report a vunerability:
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+To report a vunerability, open an issue on the repository. Updates are given per five issues. Please do not create five issues to get your update out.
 
 >[!NOTE]
 >Any versions punctuated with ".D" are developer versions and are not released yet.

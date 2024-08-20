@@ -39,7 +39,7 @@ start:
     ; Verify the kernel loaded correctly (simple checksum or magic number check)
     mov ax, 0x1000
     mov bx, 0xAA55  ; Use bx for the magic number
-    cmp word [ax], bx
+    cmp word [ax], bx ;This seems to be a problematic line.
     jne invalid_kernel
 
     ; Jump to the kernel
