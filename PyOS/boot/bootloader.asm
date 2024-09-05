@@ -1,6 +1,7 @@
 [BITS 16]
 [ORG 0x7C00]
 
+
 start:
     cli                     ; Disable interrupts
     xor ax, ax              ; Clear registers
@@ -43,7 +44,7 @@ a20_error:
 pm_error:
     mov si, pm_error_msg    ; Display error message
     call print_string
-    hlt                     ; Halt the system
+    hlt                    ; Halt the system
 
 disk_read_error:
     mov si, disk_read_error_msg
@@ -95,6 +96,7 @@ print_string:
     ret
 
 ; Error messages
+loading_msg db 'cmd...' , 0
 a20_error_msg db 'Error: A20 line failed to enable. HALT.', 0
 pm_error_msg db 'Error: Protected mode failed to enable. HALT.', 0
 disk_read_error_msg db 'Error VH01: DISK READ ERROR. STOP.', 0

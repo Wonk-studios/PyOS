@@ -8,22 +8,22 @@ CFLAGS = -ffreestanding -O2 -Wall -Wextra
 LDFLAGS = -T linker.ld -nostdlib
 
 # Output binaries
-BOOTLOADER_BIN = bootloader.bin #NASM seems to dislike this line, possibly because the bootloader has problems. If after fixing the bootloader, theres still problems, We can look into that.
+BOOTLOADER_BIN = bootloader.bin
 KERNEL_BIN = kernel.bin
 INTERPRETER_BIN = interpreter.bin
 OS_IMAGE = pyos.img
 
 # Directories
-BOOT_DIR = boot
-KERNEL_DIR = kernel
-INTERPRETER_DIR = root/PyOS/interpret
-SCRIPT_DIR = root/PyOS/interpret/script
+BOOT_DIR := boot
+KERNEL_DIR := $(KERNEL_DIR)/src  # Correct directory for kernel.c
+INTERPRETER_DIR := root/PyOS/interpret
+SCRIPT_DIR := root/PyOS/interpret/script
 
 # Source files
-BOOTLOADER_SRC = $(BOOT_DIR)/bootloader.asm
-KERNEL_SRC = $(KERNEL_DIR)/kernel.c
-INTERPRETER_SRC = $(INTERPRETER_DIR)/interpreter.c
-SCRIPT_SRC = $(SCRIPT_DIR)/script.py
+BOOTLOADER_SRC := $(BOOT_DIR)/bootloader.asm
+KERNEL_SRC := $(KERNEL_DIR)/kernel.c  # Correct path for kernel.c
+INTERPRETER_SRC := $(INTERPRETER_DIR)/interpreter.c
+SCRIPT_SRC := $(SCRIPT_DIR)/script.py
 
 # Build rules
 all: $(OS_IMAGE)
@@ -38,7 +38,7 @@ $(KERNEL_DIR)/kernel.o: $(KERNEL_SRC)
 
 # Link kernel
 $(KERNEL_DIR)/$(KERNEL_BIN): $(KERNEL_DIR)/kernel.o
-	$(LD) $(LDFLAGS) -o $(KERNEL_DIR)/$(KERNEL_BIN) $(KERNEL_DIR)/kernel.o
+	$(LD) $(LDFLAGS) -o $(KERNEL_DIR)/$(KERNEL_BIN) $(KERNEL_DIR)/$(KERNEL_BIN)
 
 # Compile interpreter
 $(INTERPRETER_DIR)/interpreter.o: $(INTERPRETER_SRC)
