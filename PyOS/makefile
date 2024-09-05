@@ -1,4 +1,6 @@
 # Define variables
+#We have some circular dependencies here, so we need to define the directories first
+#Need to make kernel.o...
 ASM = nasm
 CC = gcc
 LD = ld
@@ -15,7 +17,7 @@ OS_IMAGE = pyos.img
 
 # Directories
 BOOT_DIR := boot
-KERNEL_DIR := $(KERNEL_DIR)/src  # Correct directory for kernel.c
+KERNEL_DIR := src  # Correct directory for kernel.c
 INTERPRETER_DIR := root/PyOS/interpret
 SCRIPT_DIR := root/PyOS/interpret/script
 
@@ -33,11 +35,11 @@ $(BOOT_DIR)/$(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
 	$(ASM) $(ASM_FLAGS) $(BOOTLOADER_SRC) -o $(BOOT_DIR)/$(BOOTLOADER_BIN)
 
 # Compile kernel
-$(KERNEL_DIR)/kernel.o: $(KERNEL_SRC)
+$(KERNEL_DIR)/kernel.o: $(KERNEL_SRC)  # ignoring old recipe for /src...
 	$(CC) $(CFLAGS) -c $(KERNEL_SRC) -o $(KERNEL_DIR)/kernel.o
 
 # Link kernel
-$(KERNEL_DIR)/$(KERNEL_BIN): $(KERNEL_DIR)/kernel.o
+$(KERNEL_DIR)/$(KERNEL_BIN): $(KERNEL_DIR) #/kernel.o Overriding recipie for target /src
 	$(LD) $(LDFLAGS) -o $(KERNEL_DIR)/$(KERNEL_BIN) $(KERNEL_DIR)/$(KERNEL_BIN)
 
 # Compile interpreter
