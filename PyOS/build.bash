@@ -16,6 +16,8 @@ REQUIRED_PKGS=("gcc" "g++" "binutils" "nasm")
 MAKE_CMD="make"
 ISO_OUTPUT_PATH="$(dirname "$0")/../g/PyOS.img"
 
+check_requirements
+
 # Functions
 log() {
     local msg="$1"
