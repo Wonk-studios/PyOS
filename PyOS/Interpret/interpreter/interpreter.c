@@ -7,6 +7,17 @@
 // Function prototype for plugin initialization
 typedef void (*init_plugin_func)();
 
+// Function to log errors
+void log_error(const char *message) {
+    FILE *log_file = fopen("error_log.txt", "a");
+    if (log_file == NULL) {
+        fprintf(stderr, "Failed to open log file\n");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(log_file, "Error: %s\n", message);
+    fclose(log_file);
+}
+
 // Function to load and initialize a plugin
 void load_plugin(const char *plugin_name) {
     char plugin_path[256];
@@ -14,61 +25,44 @@ void load_plugin(const char *plugin_name) {
 
     void *handle = dlopen(plugin_path, RTLD_LAZY);
     if (!handle) {
-        fprintf(stderr, "Error loading plugin %s: %s\n", plugin_name, dlerror());
-        return;
+        log_error(dlerror());
+        exit(EXIT_FAILURE);
     }
 
-    // Find the initialization function for the plugin
-    init_plugin_func init_plugin = (init_plugin_func) dlsym(handle, "init_plugin");
+    init_plugin_func init_plugin = (init_plugin_func)dlsym(handle, "init_plugin");
     if (!init_plugin) {
-        fprintf(stderr, "Error loading init function for plugin %s: %s\n", plugin_name, dlerror());
+        log_error(dlerror());
         dlclose(handle);
-        return;
+        exit(EXIT_FAILURE);
     }
 
-    // Call the plugin's initialization function
     init_plugin();
-    printf("Plugin %s loaded successfully!\n", plugin_name);
-
-    // Optionally keep the plugin loaded for further use
-    // Call dlclose(handle) when the plugin is no longer needed.
-}
-
-// Function to execute a Python script
-void run_script(const char *script_path) {
-    FILE *fp = fopen(script_path, "r");
-    if (!fp) {
-        perror("Error opening script file");
-        return;
-    }
-
-    // Initialize the Python interpreter
-    Py_Initialize();
-
-    // Load Pygame plugin if needed
-    if (strstr(script_path, "pygame")) {
-        load_plugin("pygame");
-    }
-
-    // Execute the script
-    PyRun_SimpleFile(fp, script_path);
-
-    // Clean up
-    fclose(fp);
-    Py_Finalize();
+    dlclose(handle);
 }
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s <script_path>\n", argv[0]);
-        exit(EXIT_FAILURE);
+        log_error("No plugin specified");
+        fprintf(stderr, "Usage: %s <plugin_name>\n", argv[0]);
+        return EXIT_FAILURE;
     }
 
-    printf("Interpreter starting...\n");
+    // Initialize Python interpreter
+    Py_Initialize();
+    if (!Py_IsInitialized()) {
+        log_error("Failed to initialize Python interpreter");
+        return EXIT_FAILURE;
+    }
 
-    // Run the provided script
-    run_script(argv[1]);
+    // Load and initialize the plugin
+    load_plugin(argv[1]);
 
-    printf("Interpreter finished execution.\n");
-    return 0;
+    // Finalize Python interpreter
+    if (Py_IsInitialized()) {
+        Py_Finalize();
+    } else {
+        log_error("Python interpreter was not properly initialized");
+    }
+
+    return EXIT_SUCCESS;
 }

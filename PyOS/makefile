@@ -1,6 +1,4 @@
 # Define variables
-#We have some circular dependencies here, so we need to define the directories first
-#Need to make kernel.o...
 ASM = nasm
 CC = gcc
 LD = ld
@@ -14,52 +12,55 @@ BOOTLOADER_BIN = bootloader.bin
 KERNEL_BIN = kernel.bin
 INTERPRETER_BIN = interpreter.bin
 OS_IMAGE = pyos.img
+ISO = pyos.iso
 
 # Directories
-BOOT_DIR := boot
-KERNEL_DIR := src  # Correct directory for kernel.c
-INTERPRETER_DIR := root/PyOS/interpret
-SCRIPT_DIR := root/PyOS/interpret/script
+BOOT_DIR = boot
+KERNEL_DIR = src
+INTERPRETER_DIR = root/PyOS/interpret
+SCRIPT_DIR = root/PyOS/interpret/script
+ISO_DIR = iso
 
 # Source files
-BOOTLOADER_SRC := $(BOOT_DIR)/bootloader.asm
-KERNEL_SRC := $(KERNEL_DIR)/kernel.c  # Correct path for kernel.c
-INTERPRETER_SRC := $(INTERPRETER_DIR)/interpreter.c
-SCRIPT_SRC := $(SCRIPT_DIR)/script.py
+BOOTLOADER_SRC = $(BOOT_DIR)/bootloader.asm
+KERNEL_SRC = $(KERNEL_DIR)/kernel.c
+INTERPRETER_SRC = $(INTERPRETER_DIR)/interpreter.c
+SCRIPT_SRC = $(SCRIPT_DIR)/script.py
 
 # Build rules
-all: $(OS_IMAGE)
+all: $(ISO)
 
 # Assemble bootloader
 $(BOOT_DIR)/$(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
-	$(ASM) $(ASM_FLAGS) $(BOOTLOADER_SRC) -o $(BOOT_DIR)/$(BOOTLOADER_BIN)
+    $(ASM) $(ASM_FLAGS) $(BOOTLOADER_SRC) -o $(BOOT_DIR)/$(BOOTLOADER_BIN)
 
 # Compile kernel
-$(KERNEL_DIR)/kernel.o: $(KERNEL_SRC)  # ignoring old recipe for /src...
-	$(CC) $(CFLAGS) -c $(KERNEL_SRC) -o $(KERNEL_DIR)/kernel.o
+$(KERNEL_DIR)/kernel.o: $(KERNEL_SRC)
+    $(CC) $(CFLAGS) -c $(KERNEL_SRC) -o $(KERNEL_DIR)/kernel.o
 
 # Link kernel
-$(KERNEL_DIR)/$(KERNEL_BIN): $(KERNEL_DIR) #/kernel.o Overriding recipie for target /src
-	$(LD) $(LDFLAGS) -o $(KERNEL_DIR)/$(KERNEL_BIN) $(KERNEL_DIR)/$(KERNEL_BIN)
+$(KERNEL_DIR)/$(KERNEL_BIN): $(KERNEL_DIR)/kernel.o
+    $(LD) $(LDFLAGS) -o $(KERNEL_DIR)/$(KERNEL_BIN) $(KERNEL_DIR)/kernel.o
 
 # Compile interpreter
 $(INTERPRETER_DIR)/interpreter.o: $(INTERPRETER_SRC)
-	$(CC) $(CFLAGS) -c $(INTERPRETER_SRC) -o $(INTERPRETER_DIR)/interpreter.o
+    $(CC) $(CFLAGS) -c $(INTERPRETER_SRC) -o $(INTERPRETER_DIR)/interpreter.o
 
 # Link interpreter
 $(INTERPRETER_DIR)/$(INTERPRETER_BIN): $(INTERPRETER_DIR)/interpreter.o
-	$(LD) $(LDFLAGS) -o $(INTERPRETER_DIR)/interpreter.bin $(INTERPRETER_DIR)/interpreter.o
+    $(LD) $(LDFLAGS) -o $(INTERPRETER_DIR)/$(INTERPRETER_BIN) $(INTERPRETER_DIR)/interpreter.o
 
-# Run script
-run-script: $(SCRIPT_SRC)
-	$(PYTHON) $(SCRIPT_SRC)
+# Create ISO image
+$(ISO): $(BOOT_DIR)/$(BOOTLOADER_BIN) $(KERNEL_DIR)/$(KERNEL_BIN) $(INTERPRETER_DIR)/$(INTERPRETER_BIN)
+    mkdir -p $(ISO_DIR)/boot
+    cp $(BOOT_DIR)/$(BOOTLOADER_BIN) $(ISO_DIR)/boot/bootloader.bin
+    cp $(KERNEL_DIR)/$(KERNEL_BIN) $(ISO_DIR)/boot/kernel.bin
+    cp $(INTERPRETER_DIR)/$(INTERPRETER_BIN) $(ISO_DIR)/boot/interpreter.bin
+    $(MKISOFS) -o $(ISO) -b boot/bootloader.bin -no-emul-boot -boot-load-size 4 -boot-info-table $(ISO_DIR)
 
-# Create OS image
-$(OS_IMAGE): $(BOOT_DIR)/$(BOOTLOADER_BIN) $(KERNEL_DIR)/$(KERNEL_BIN) $(INTERPRETER_DIR)/$(INTERPRETER_BIN)
-	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=2880
-	dd if=$(BOOT_DIR)/$(BOOTLOADER_BIN) of=$(OS_IMAGE) conv=notrunc
-	dd if=$(KERNEL_DIR)/$(KERNEL_BIN) of=$(OS_IMAGE) seek=1 conv=notrunc
-	dd if=$(INTERPRETER_DIR)/$(INTERPRETER_BIN) of=$(OS_IMAGE) seek=2 conv=notrunc
-
+# Clean up
 clean:
-	rm -f $(BOOT_DIR)/*.bin $(KERNEL_DIR)/*.o $(KERNEL_DIR)/*.bin $(INTERPRETER_DIR)/*.o $(INTERPRETER_DIR)/*.bin $(OS_IMAGE)
+    rm -f $(BOOTLOADER_BIN) $(KERNEL_DIR)/*.o $(KERNEL_BIN) $(INTERPRETER_DIR)/*.o $(INTERPRETER_BIN) $(ISO)
+    rm -rf $(ISO_DIR)
+
+.PHONY: all clean
