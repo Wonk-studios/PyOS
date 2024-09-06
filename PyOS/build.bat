@@ -1,6 +1,13 @@
 @echo off
 setlocal enabledelayedexpansion
 
+REM ============================================================
+REM Build Script
+REM Publisher: Wonk Studios
+REM Description: This script automates the build process for PyOS.
+REM copyright (c) 2024 Wonk Studios. All rights reserved.
+REM ============================================================
+
 REM Configuration
 set CONFIG_FILE=%~dp0config.bat
 set BUILD_DIR=%~dp0..\g
