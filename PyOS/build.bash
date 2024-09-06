@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Ensure the script is run with sudo
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run as root"
+  exec sudo "$0" "$@"
+fi
+
 # Configuration
 CONFIG_FILE="$(dirname "$0")/config.sh"
 BUILD_DIR="$(dirname "$0")/../g"
@@ -24,65 +30,8 @@ check_requirements() {
             $APT_INSTALL_CMD "$pkg" | tee -a "$LOG_FILE"
             if [ $? -ne 0 ]; then
                 log "Failed to install $pkg. Exiting."
-                read -p "Press Enter to close..."
                 exit 1
             fi
-        else
-            log "Package $pkg is already installed."
         fi
     done
 }
-
-load_config() {
-    if [ -f "$CONFIG_FILE" ]; then
-        log "Loading configuration from $CONFIG_FILE"
-        source "$CONFIG_FILE"
-    else
-        log "Configuration file $CONFIG_FILE not found!"
-        read -p "Press Enter to close..."
-        exit 1
-    fi
-}
-
-build_project() {
-    log "Starting build process..."
-    if [ -d "$BUILD_DIR" ]; then
-        cd "$BUILD_DIR" || { log "Failed to change directory to $BUILD_DIR."; read -p "Press Enter to close..."; exit 1; }
-        $MAKE_CMD | tee -a "$LOG_FILE"
-        if [ $? -ne 0 ]; then
-            log "Build failed!"
-            read -p "Press Enter to close..."
-            exit 1
-        fi
-        log "Build succeeded."
-    else
-        log "Build directory $BUILD_DIR not found!"
-        read -p "Press Enter to close..."
-        exit 1
-    fi
-}
-
-create_iso() {
-    log "Creating ISO image..."
-    if [ -f "$ISO_OUTPUT_PATH" ]; then
-        rm "$ISO_OUTPUT_PATH"
-    fi
-    genisoimage -o "$ISO_OUTPUT_PATH" -b boot/bootloader.bin -no-emul-boot -boot-load-size 4 -boot-info-table "$BUILD_DIR" | tee -a "$LOG_FILE"
-    if [ $? -ne 0 ]; then
-        log "ISO creation failed!"
-        read -p "Press Enter to close..."
-        exit 1
-    fi
-    log "ISO image created at $ISO_OUTPUT_PATH."
-}
-
-main() {
-    log "Build script started."
-    load_config
-    check_requirements
-    build_project
-    create_iso
-    log "Build script completed."
-}
-
-main "$@"
