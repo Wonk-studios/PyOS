@@ -4,8 +4,8 @@ CC = gcc
 LD = ld
 PYTHON = python3
 ASM_FLAGS = -f bin
-CFLAGS = -ffreestanding -O2 -Wall -Wextra
-LDFLAGS = -T linker.ld -nostdlib
+CFLAGS = -ffreestanding -O2 -Wall -Wextra `pkg-config --cflags wayland-client`
+LDFLAGS = -T linker.ld -nostdlib `pkg-config --libs wayland-client`
 
 # Output binaries
 BOOTLOADER_BIN = bootloader.bin
@@ -25,42 +25,26 @@ ISO_DIR = iso
 BOOTLOADER_SRC = $(BOOT_DIR)/bootloader.asm
 KERNEL_SRC = $(KERNEL_DIR)/kernel.c
 INTERPRETER_SRC = $(INTERPRETER_DIR)/interpreter.c
-SCRIPT_SRC = $(SCRIPT_DIR)/script.py
+WAYLAND_SRC = $(KERNEL_DIR)/wayland.c
 
 # Build rules
-all: $(ISO)
+$(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
+    $(ASM) $(ASM_FLAGS) -o $@ $<
 
-# Assemble bootloader
-$(BOOT_DIR)/$(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
-    $(ASM) $(ASM_FLAGS) $(BOOTLOADER_SRC) -o $(BOOT_DIR)/$(BOOTLOADER_BIN)
+$(KERNEL_BIN): $(KERNEL_SRC) $(WAYLAND_SRC)
+    $(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-# Compile kernel
-$(KERNEL_DIR)/kernel.o: $(KERNEL_SRC)
-    $(CC) $(CFLAGS) -c $(KERNEL_SRC) -o $(KERNEL_DIR)/kernel.o
+$(INTERPRETER_BIN): $(INTERPRETER_SRC)
+    $(CC) $(CFLAGS) -o $@ $^
 
-# Link kernel
-$(KERNEL_DIR)/$(KERNEL_BIN): $(KERNEL_DIR)/kernel.o
-    $(LD) $(LDFLAGS) -o $(KERNEL_DIR)/$(KERNEL_BIN) $(KERNEL_DIR)/kernel.o
+$(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN)
+    cat $^ > $@
 
-# Compile interpreter
-$(INTERPRETER_DIR)/interpreter.o: $(INTERPRETER_SRC)
-    $(CC) $(CFLAGS) -c $(INTERPRETER_SRC) -o $(INTERPRETER_DIR)/interpreter.o
+$(ISO): $(OS_IMAGE)
+    mkdir -p $(ISO_DIR)/boot/grub
+    cp $< $(ISO_DIR)/boot/
+    grub-mkrescue -o $@ $(ISO_DIR)
 
-# Link interpreter
-$(INTERPRETER_DIR)/$(INTERPRETER_BIN): $(INTERPRETER_DIR)/interpreter.o
-    $(LD) $(LDFLAGS) -o $(INTERPRETER_DIR)/$(INTERPRETER_BIN) $(INTERPRETER_DIR)/interpreter.o
-
-# Create ISO image
-$(ISO): $(BOOT_DIR)/$(BOOTLOADER_BIN) $(KERNEL_DIR)/$(KERNEL_BIN) $(INTERPRETER_DIR)/$(INTERPRETER_BIN)
-    mkdir -p $(ISO_DIR)/boot
-    cp $(BOOT_DIR)/$(BOOTLOADER_BIN) $(ISO_DIR)/boot/bootloader.bin
-    cp $(KERNEL_DIR)/$(KERNEL_BIN) $(ISO_DIR)/boot/kernel.bin
-    cp $(INTERPRETER_DIR)/$(INTERPRETER_BIN) $(ISO_DIR)/boot/interpreter.bin
-    $(MKISOFS) -o $(ISO) -b boot/bootloader.bin -no-emul-boot -boot-load-size 4 -boot-info-table $(ISO_DIR)
-
-# Clean up
 clean:
-    rm -f $(BOOTLOADER_BIN) $(KERNEL_DIR)/*.o $(KERNEL_BIN) $(INTERPRETER_DIR)/*.o $(INTERPRETER_BIN) $(ISO)
+    rm -f $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN) $(OS_IMAGE) $(ISO)
     rm -rf $(ISO_DIR)
-
-.PHONY: all clean

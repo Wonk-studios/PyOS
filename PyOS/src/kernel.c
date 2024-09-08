@@ -1,14 +1,25 @@
 #include <stdint.h>
+#include <stdio.h>
+
+// Function prototypes
+int initialize_memory();
+int initialize_devices();
+int initialize_wayland();
 
 void kernel_main() {
     // Initialize essential drivers, memory, etc.
     if (initialize_memory() == -1) {
-        print("MEMORY INT FAILED! KERNEL ENTERED PANIC!");
+        printf("MEMORY INT FAILED! KERNEL ENTERED PANIC!\n");
         hlt();
     }
 
     if (initialize_devices() == -1) {
-        print("DEVICE INT FAILED! KERNEL ENTERED PANIC!");
+        printf("DEVICE INT FAILED! KERNEL ENTERED PANIC!\n");
+        hlt();
+    }
+
+    if (initialize_wayland() == -1) {
+        printf("WAYLAND INT FAILED! KERNEL ENTERED PANIC!\n");
         hlt();
     }
 
@@ -27,21 +38,6 @@ int initialize_memory() {
 }
 
 int initialize_devices() {
-    // Error handling for device setup
-    if (!device_check()) {
-        return -1;
-    }
+    // Placeholder for device initialization
     return 0;
-}
-
-void print(const char* message) {
-    // Basic print to the screen
-    while (*message) {
-        write_char(*message++);
-    }
-}
-
-void hlt() {
-    // Halt system
-    asm volatile ("hlt");
 }
