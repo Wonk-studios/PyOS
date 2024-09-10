@@ -1,50 +1,47 @@
 # Define variables
-ASM = nasm
 CC = gcc
+CFLAGS = -Wall -Wextra -O2
+AS = nasm
+ASFLAGS = -f bin
 LD = ld
-PYTHON = python3
-ASM_FLAGS = -f bin
-CFLAGS = -ffreestanding -O2 -Wall -Wextra `pkg-config --cflags wayland-client`
-LDFLAGS = -T linker.ld -nostdlib `pkg-config --libs wayland-client`
+LDFLAGS = -T linker.ld
 
-# Output binaries
+BOOTLOADER_SRC = bootloader.asm
 BOOTLOADER_BIN = bootloader.bin
+KERNEL_SRC = kernel.asm
 KERNEL_BIN = kernel.bin
+INTERPRETER_SRC = interpreter.c
 INTERPRETER_BIN = interpreter.bin
-OS_IMAGE = pyos.img
-ISO = pyos.iso
+OS_IMAGE = os_image.bin
+ISO = os.iso
+ISO_DIR = iso_dir
 
-# Directories
-BOOT_DIR = boot
-KERNEL_DIR = src
-INTERPRETER_DIR = root/PyOS/interpret
-SCRIPT_DIR = root/PyOS/interpret/script
-ISO_DIR = iso
+# Default target
+all: $(ISO)
 
-# Source files
-BOOTLOADER_SRC = $(BOOT_DIR)/bootloader.asm
-KERNEL_SRC = $(KERNEL_DIR)/kernel.c
-INTERPRETER_SRC = $(INTERPRETER_DIR)/interpreter.c
-WAYLAND_SRC = $(KERNEL_DIR)/wayland.c
-
-# Build rules
+# Build the bootloader
 $(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
-    $(ASM) $(ASM_FLAGS) -o $@ $<
+    $(AS) $(ASFLAGS) -o $@ $<
 
-$(KERNEL_BIN): $(KERNEL_SRC) $(WAYLAND_SRC)
-    $(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+# Build the kernel
+$(KERNEL_BIN): $(KERNEL_SRC)
+    $(AS) $(ASFLAGS) -o $@ $<
 
+# Build the interpreter
 $(INTERPRETER_BIN): $(INTERPRETER_SRC)
     $(CC) $(CFLAGS) -o $@ $^
 
+# Create the OS image
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN)
     cat $^ > $@
 
+# Create the ISO
 $(ISO): $(OS_IMAGE)
     mkdir -p $(ISO_DIR)/boot/grub
     cp $< $(ISO_DIR)/boot/
     grub-mkrescue -o $@ $(ISO_DIR)
 
+# Clean up build artifacts
 clean:
     rm -f $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN) $(OS_IMAGE) $(ISO)
     rm -rf $(ISO_DIR)
