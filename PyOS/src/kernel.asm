@@ -12,7 +12,7 @@ gdt64_ptr:
     dq 0
 
 ; Error messages
-kernel_msg db 'Kernel loaded successfully.', 0
+kernel_msg db '...', 0
 kernel_error_msg db 'ERROR VH05 UNKNOWN KERNEL ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
 kernel_initialization_error_msg db 'Error VH21: KERNEL INITIALIZATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
 memory_allocation_error_msg db 'Error VH22: MEMORY ALLOCATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
@@ -106,6 +106,26 @@ print_string:
     inc rbx
     loop .next_char
 .done:
+    ret
+
+error_handler:
+    ; Set screen color to red
+    call set_screen_color
+    ; Display error message
+    mov rsi, kernel_error_msg
+    call print_string
+    hlt
+
+set_screen_color:
+    ; VGA text buffer starts at 0xB8000
+    mov rdi, 0xB8000
+    ; Red background, white text: 0x4F
+    mov al, 0x4F
+    mov ecx, 2000  ; 80x25 screen, 2 bytes per character
+.set_color_loop:
+    mov [rdi], ax
+    add rdi, 2
+    loop .set_color_loop
     ret
 
 ; End of kernel

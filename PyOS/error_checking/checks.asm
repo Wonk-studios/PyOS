@@ -16,7 +16,7 @@ memory_error:
     cli
     hlt
 
-memory_error_msg db "Memory error detected!", 0xA, 0
+memory_error_msg db "ERROR VH69: MEMORY ERROR! HALT", 0xA, 0
 memory_error_msg_len equ $ - memory_error_msg
 
 ; Check CPU status
@@ -34,5 +34,5 @@ cpu_error:
     cli
     hlt
 
-cpu_error_msg db "CPU error detected!", 0xA, 0
+cpu_error_msg db "ERROR VH94 CPU ERROR! HALT!", 0xA, 0
 cpu_error_msg_len equ $ - cpu_error_msg

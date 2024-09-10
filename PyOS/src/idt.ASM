@@ -63,7 +63,7 @@ isr0:
     iretq
 
 section .rodata
-isr0_msg db 'Divide by zero error', 0
+isr0_msg db 'Divide by zero error.', 0
 
 section .text
 global isr0_handler

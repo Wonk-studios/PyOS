@@ -42,7 +42,7 @@ void load_plugin(const char *plugin_name) {
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        log_error("No plugin specified");
+        log_error("Error 2: No plugins specified.");
         fprintf(stderr, "Usage: %s <plugin_name>\n", argv[0]);
         return EXIT_FAILURE;
     }
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     // Initialize Python interpreter
     Py_Initialize();
     if (!Py_IsInitialized()) {
-        log_error("Failed to initialize Python interpreter");
+        log_error("Error 14: `Py_Initialize` failed");
         return EXIT_FAILURE;
     }
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     if (Py_IsInitialized()) {
         Py_Finalize();
     } else {
-        log_error("Python interpreter was not properly initialized");
+        log_error("Error 10: interpreter was not properly initialized.");
     }
 
     return EXIT_SUCCESS;

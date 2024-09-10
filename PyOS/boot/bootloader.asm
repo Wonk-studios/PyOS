@@ -1,108 +1,102 @@
-[BITS 16]
-[ORG 0x7C00]
-
+BITS 16
+ORG 0x7C00
 
 start:
-    cli                     ; Disable interrupts
-    xor ax, ax              ; Clear registers
-    mov ds, ax
-    mov es, ax
+    ; Set up the stack
+    xor ax, ax
     mov ss, ax
-    mov sp, 0x7C00          ; Set stack pointer
+    mov sp, 0x7C00
 
-    ; Load GDT
-    lgdt [gdt_descriptor] ;This is the first thing NASM doesnt like.
+    ; Clear interrupts
+    cli
 
-    ; Enable A20 line (required for memory above 1MB)
-    in al, 0x92
-    or al, 00000010b
-    out 0x92, al
+    ; Load the GDT
+    lgdt [gdt_descriptor]
 
-    ; Check if A20 is enabled
-    in al, 0x92
-    test al, 00000010b
-    jz a20_error            ; Jump if A20 line failed to enable
+    ; Enable A20 line
+    call enable_a20
+    jc a20_error
 
-    ; Enter protected mode
-    mov eax, cr0
-    or eax, 1               ; Set PE bit (bit 0) to enable protected mode
-    mov cr0, eax
+    ; Switch to protected mode
+    call enter_protected_mode
+    jc pm_error
 
-    ; Verify protected mode enabled
-    mov eax, cr0
-    test eax, 1
-    jz pm_error             ; Jump if protected mode failed to enable
+    ; Load the kernel
+    call load_kernel
+    jc disk_read_error
 
-    ; Far jump to protected mode
-    jmp 0x08:protected_mode_start ;This seems to be the next issue NASM has compiling the files
+    ; Jump to the kernel entry point
+    jmp 0x1000:0x0000
 
 a20_error:
-    mov si, a20_error_msg   ; Display error message
-    call print_string
-    hlt                     ; Halt the system
+    call handle_error
+    push a20_error_msg
+    call print_error_msg
+    hlt
 
 pm_error:
-    mov si, pm_error_msg    ; Display error message
-    call print_string
-    hlt                    ; Halt the system
+    call handle_error
+    push pm_error_msg
+    call print_error_msg
+    hlt
 
 disk_read_error:
-    mov si, disk_read_error_msg
-    call print_string
-    hlt                     ; Halt the system
+    call handle_error
+    push disk_read_error_msg
+    call print_error_msg
+    hlt
 
-invalid_kernel:
-    mov si, invalid_kernel_msg
-    call print_string
-    hlt                     ; Halt the system
+; Enable A20 line
+enable_a20:
+    in al, 0x64
+    test al, 2
+    jnz enable_a20
+    mov al, 0xD1
+    out 0x64, al
+    in al, 0x64
+    test al, 2
+    jnz enable_a20
+    mov al, 0xDF
+    out 0x60, al
+    ret
 
-bios_interrupt_error:
-    mov si, bios_interrupt_error_msg
-    call print_string
-    hlt                     ; Halt the system
+; Enter protected mode
+enter_protected_mode:
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+    jmp 0x08:protected_mode_entry
 
-unknown_error:
-    mov si, unknown_error_msg
-    call print_string
-    hlt                     ; Halt the system
-
-; The following code starts after entering protected mode
-
-[BITS 32]
-
-protected_mode_start:
-    ; Protected mode code starts here
-    ; Initialize segment registers, etc.
+protected_mode_entry:
+    ; Set up segment registers
     mov ax, 0x10
     mov ds, ax
     mov es, ax
+    mov fs, ax
+    mov gs, ax
     mov ss, ax
-    mov esp, 0x9C00         ; Set stack pointer for protected mode
+    mov esp, 0x9000
 
-    ; Continue kernel execution...
+    ; Jump to the kernel entry point
+    jmp 0x1000:0x0000
 
-    hlt                     ; Temporary halt after execution
-
-; Print string function
-print_string:
-    mov ah, 0x0E
-.repeat:
-    lodsb
-    cmp al, 0
-    je .done
-    int 0x10
-    jmp .repeat
-.done:
+; Load the kernel
+load_kernel:
+    mov bx, 0x1000
+    mov dh, 0
+    mov dl, 0x80
+    mov ch, 0
+    mov cl, 2
+    mov ah, 0x02
+    mov al, 1
+    int 0x13
+    jc disk_read_error
     ret
 
 ; Error messages
-loading_msg db 'cmd...' , 0
-a20_error_msg db 'Error: A20 line failed to enable. HALT.', 0
-pm_error_msg db 'Error: Protected mode failed to enable. HALT.', 0
+a20_error_msg db 'Error VH14: A20 LINE FAILED TO EXECUTE. HALT.', 0
+pm_error_msg db 'Error VH53: PROTECTED MODE FAILED TO EXECUTE. HALT.', 0
 disk_read_error_msg db 'Error VH01: DISK READ ERROR. STOP.', 0
-invalid_kernel_msg db 'Error VH52: INVALID KERNEL DETECTED. CANNOT LOAD. STOP.', 0
-bios_interrupt_error_msg db 'Error VH03: BIOS INTERRUPT ERROR. STOP.', 0
-unknown_error_msg db 'ERROR STOP.', 0
 
 ; GDT descriptor and table
 gdt_descriptor:
@@ -115,7 +109,7 @@ gdt:
     dd 0x00000000
 
     ; Code segment descriptor
-    dw 0xFFFF               ; Segment limit (low 16 bits)
+    dw 0xFFFF               ; Limit (low 16 bits)
     dw 0x0000               ; Base address (low 16 bits)
     db 0x00                 ; Base address (next 8 bits)
     db 10011010b            ; Access byte: Present, Ring 0, Code segment, Executable, Readable
@@ -123,7 +117,7 @@ gdt:
     db 0x00                 ; Base address (high 8 bits)
 
     ; Data segment descriptor
-    dw 0xFFFF               ; Segment limit (low 16 bits)
+    dw 0xFFFF               ; Limit (low 16 bits)
     dw 0x0000               ; Base address (low 16 bits)
     db 0x00                 ; Base address (next 8 bits)
     db 10010010b            ; Access byte: Present, Ring 0, Data segment, Writable
@@ -133,3 +127,39 @@ gdt:
 gdt_end:
     times 510-($-$$) db 0   ; Fill boot sector up to 510 bytes
     dw 0xAA55               ; Boot sector signature
+
+; VGA text mode constants
+VGA_TEXT_MODE_ADDRESS equ 0xB8000
+VGA_WIDTH equ 80
+VGA_HEIGHT equ 25
+VGA_RED_BACKGROUND equ 0x4F  ; Red background, white text
+
+; Function to set the screen background color to red
+set_screen_red:
+    mov di, VGA_TEXT_MODE_ADDRESS
+    mov cx, VGA_WIDTH * VGA_HEIGHT
+    mov al, ' '  ; Space character
+    mov ah, VGA_RED_BACKGROUND
+    rep stosw
+    ret
+
+; Function to print an error message
+print_error_msg:
+    pusha
+    mov si, [esp + 36]  ; Get the error message pointer from the stack
+    mov di, VGA_TEXT_MODE_ADDRESS
+    mov ah, VGA_RED_BACKGROUND
+.print_loop:
+    lodsb
+    cmp al, 0
+    je .done
+    stosw
+    jmp .print_loop
+.done:
+    popa
+    ret
+
+; Function to handle errors
+handle_error:
+    call set_screen_red
+    ret
