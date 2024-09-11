@@ -1,7 +1,7 @@
 [BITS 16]
 [ORG 0x7C00]
 
-;THIS BOOTLOADER IS OUT OF DATE AND NOT TO BE USED!
+;  THE REAL MODE BOOTLOADER IS NOT TO BE USED!
 
 start:
     ; Set up stack and segment registers
