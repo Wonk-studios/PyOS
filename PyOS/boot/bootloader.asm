@@ -6,8 +6,8 @@ VGA_TEXT_MODE_ADDRESS equ 0xB8000
 VGA_WHITE_ON_BLACK equ 0x0F00
 VGA_RED_ON_BLACK equ 0x4F00
 
-boot_msg db '.', 0
-f12_message db 'F12 for terminal', 0
+boot_msg db 'Bootloader loaded. Press ESC to enter terminal.', 0
+f12_message db 'Press F12 for terminal', 0
 error_dump_msg db 'Error Dump:', 0
 
 section .text
