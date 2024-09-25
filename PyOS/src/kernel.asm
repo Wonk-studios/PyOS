@@ -12,7 +12,7 @@ gdt64_ptr:
     dq 0
 
 ; Error messages
-kernel_msg db '...', 0
+kernel_msg db '...ESC to enter terminal.', 0
 kernel_error_msg db 'ERROR VH05 UNKNOWN KERNEL ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
 kernel_initialization_error_msg db 'Error VH21: KERNEL INITIALIZATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
 memory_allocation_error_msg db 'Error VH22: MEMORY ALLOCATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
@@ -31,6 +31,9 @@ pd_table:
 
 section .text
 global start
+extern isr_keyboard_handler
+extern terminal_loop
+
 start:
     ; Set up the GDT
     lgdt [gdt64_ptr]
@@ -67,6 +70,12 @@ start:
     mov eax, cr0
     or eax, 1 << 31
     mov cr0, eax
+
+    ; Set up IDT for keyboard interrupt
+    lidt [idt_ptr]
+
+    ; Enable interrupts
+    sti
 
     ; Jump to 64-bit code segment
     jmp 0x08:long_mode_entry
@@ -127,6 +136,21 @@ set_screen_color:
     add rdi, 2
     loop .set_color_loop
     ret
+
+; Keyboard interrupt handler
+isr_keyboard_handler:
+    pusha
+    ; Read the scan code from the keyboard controller
+    in al, 0x60
+    cmp al, 0x01  ; ESC key scan code
+    je enter_terminal
+    popa
+    iret
+
+enter_terminal:
+    call terminal_loop
+    popa
+    iret
 
 ; End of kernel
 times 512 - ($ - $$) db 0  ; Fill remaining space to 512 bytes

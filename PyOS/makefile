@@ -1,47 +1,60 @@
 # Define variables
 CC = gcc
-CFLAGS = -Wall -Wextra -O2
+CFLAGS = -Wall -Wextra -O2 -m32 -ffreestanding
 AS = nasm
-ASFLAGS = -f bin
+ASFLAGS = -f elf
 LD = ld
-LDFLAGS = -T linker.ld
+LDFLAGS = -m elf_i386 -T linker.ld
 
 BOOTLOADER_SRC = bootloader.asm
 BOOTLOADER_BIN = bootloader.bin
 KERNEL_SRC = kernel.asm
 KERNEL_BIN = kernel.bin
+ERROR_DUMP_SRC = error_dump.asm
+ERROR_DUMP_OBJ = error_dump.o
+KERNEL_TERMINAL_SRC = kernel-terminal.c
+KERNEL_TERMINAL_OBJ = kernel-terminal.o
+BOOTLOADER_TERMINAL_SRC = bootloader-terminal.asm
+BOOTLOADER_TERMINAL_BIN = bootloader-terminal.bin
 INTERPRETER_SRC = interpreter.c
 INTERPRETER_BIN = interpreter.bin
 OS_IMAGE = os_image.bin
-ISO = os.iso
-ISO_DIR = iso_dir
 
 # Default target
-all: $(ISO)
+all: $(OS_IMAGE)
 
-# Build the bootloader
+# Assemble the bootloader
 $(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
     $(AS) $(ASFLAGS) -o $@ $<
 
-# Build the kernel
-$(KERNEL_BIN): $(KERNEL_SRC)
+# Assemble the bootloader terminal
+$(BOOTLOADER_TERMINAL_BIN): $(BOOTLOADER_TERMINAL_SRC)
     $(AS) $(ASFLAGS) -o $@ $<
 
-# Build the interpreter
+# Assemble the kernel
+$(KERNEL_BIN): $(KERNEL_SRC) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ)
+    $(AS) $(ASFLAGS) -o $@ $<
+
+# Assemble the error dump
+$(ERROR_DUMP_OBJ): $(ERROR_DUMP_SRC)
+    $(AS) $(ASFLAGS) -o $@ $<
+
+# Compile the kernel terminal
+$(KERNEL_TERMINAL_OBJ): $(KERNEL_TERMINAL_SRC)
+    $(CC) $(CFLAGS) -c -o $@ $<
+
+# Compile the interpreter
 $(INTERPRETER_BIN): $(INTERPRETER_SRC)
-    $(CC) $(CFLAGS) -o $@ $^
+    $(CC) $(CFLAGS) -o $@ $<
+
+# Link the kernel, error dump, and kernel terminal
+kernel: $(KERNEL_BIN) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ)
+    $(LD) $(LDFLAGS) -o $@ $(KERNEL_BIN) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ)
 
 # Create the OS image
-$(OS_IMAGE): $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN)
-    cat $^ > $@
+$(OS_IMAGE): $(BOOTLOADER_BIN) $(BOOTLOADER_TERMINAL_BIN) kernel $(INTERPRETER_BIN)
+    cat $(BOOTLOADER_BIN) $(BOOTLOADER_TERMINAL_BIN) kernel $(INTERPRETER_BIN) > $@
 
-# Create the ISO
-$(ISO): $(OS_IMAGE)
-    mkdir -p $(ISO_DIR)/boot/grub
-    cp $< $(ISO_DIR)/boot/
-    grub-mkrescue -o $@ $(ISO_DIR)
-
-# Clean up build artifacts
+# Clean up the build files
 clean:
-    rm -f $(BOOTLOADER_BIN) $(KERNEL_BIN) $(INTERPRETER_BIN) $(OS_IMAGE) $(ISO)
-    rm -rf $(ISO_DIR)
+    rm -f $(BOOTLOADER_BIN) $(BOOTLOADER_TERMINAL_BIN) $(KERNEL_BIN) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(INTERPRETER_BIN) kernel $(OS_IMAGE)
