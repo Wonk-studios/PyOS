@@ -1,91 +1,83 @@
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include "terminal.h"
+
+// Buffer to hold the config.ini content
+#define CONFIG_BUFFER_SIZE 512
+char config_buffer[CONFIG_BUFFER_SIZE];
+
+// Variables to store the settings
+bool verbose_mode = false;
 
 // Function prototypes
-int initialize_memory();
-int initialize_devices();
-int initialize_wayland();
-void hlt(); // Prototype for the halt function
-
-// Wayland server structure
-typedef struct {
-    // Add fields for Wayland server components
-    void *display;
-    void *compositor;
-    // Other Wayland components
-} WaylandServer;
-
-WaylandServer *wayland_server = NULL;
+void load_config();
+void parse_config();
+void find_verbose_mode();
 
 void kernel_main() {
-    // Initialize essential drivers, memory, etc.
-    if (initialize_memory() == -1) {
-        printf("SYSTEM EXCEPTION AT MEMORY INIT! KERNEL ENTERED PANIC MODE! HALT.\n");
-        hlt();
+    // Initialize terminal
+    terminal_initialize();
+
+    // Load the config.ini file from disk
+    load_config();
+
+    // Parse the config.ini file
+    parse_config();
+
+    // Check if verbose_mode is true
+    if (verbose_mode) {
+        terminal_writestring("Verbose mode enabled.\n");
     }
 
-    if (initialize_devices() == -1) {
-        printf("SYSTEM EXCEPTION AT DEVICE INIT! KERNEL ENTERED PANIC MODE! HALT.\n");
-        hlt();
-    }
-
-    if (initialize_wayland() == -1) {
-        printf("WAYLAND INIT FAILED! KERNEL ENTERED PANIC MODE! HALT.\n");
-        hlt();
-    }
-
-    // Continue with normal kernel execution
-    printf("Kernel initialized successfully.\n");
-}
-
-// Dummy implementations for the function prototypes
-int initialize_memory() {
-    // Implementation for memory initialization
-    return 0; // Return -1 on failure
-}
-
-int initialize_devices() {
-    // Implementation for device initialization
-    return 0; // Return -1 on failure
-}
-
-int initialize_wayland() {
-    // Allocate memory for the Wayland server
-    wayland_server = (WaylandServer *)malloc(sizeof(WaylandServer));
-    if (wayland_server == NULL) {
-        printf("WAYLAND INIT FAILED: MEM ALLOCATION FOR WAYLAND SERVER FAILED! KERNEL PANIC\n");
-        return -1; // Memory allocation failed
-    }
-
-    // Initialize Wayland server components
-    wayland_server->display = malloc(1024); // Example allocation
-    if (wayland_server->display == NULL) {
-        printf("WAYLAND INIT FAILED: Memory allocation for display failed.\n");
-        return -1; // Memory allocation failed
-    }
-
-    wayland_server->compositor = malloc(1024); // Example allocation
-    if (wayland_server->compositor == NULL) {
-        printf("WAYLAND INIT FAILED: Memory allocation for compositor failed.\n");
-        return -1; // Memory allocation failed
-    }
-
-    // Add actual Wayland initialization code here
-    // For example, initializing the display and compositor
-
-    // If any initialization step fails, print an error message and return -1
-    if (/* some initialization step fails */) {
-        printf("WAYLAND INIT FAILED: Specific initialization step failed.\n");
-        return -1;
-    }
-
-    return 0; // Return 0 on success
-}
-
-void hlt() {
-    // Implementation for halting the CPU
+    // Kernel main loop
     while (1) {
-        // Infinite loop to simulate halt
+        // Kernel operations
+    }
+}
+
+// Load the config.ini file from disk
+void load_config() {
+    // Simplified example: Assume config.ini is at a known sector
+    uint16_t segment = 0x1000;
+    uint16_t offset = 0x0000;
+    uint8_t drive = 0x80; // First hard drive
+    uint8_t head = 0;
+    uint8_t sector = 2;
+    uint8_t cylinder = 0;
+    uint8_t num_sectors = 1;
+
+    asm volatile (
+        "int $0x13"
+        : // No output operands
+        : "a"(0x0201), "b"(config_buffer), "c"((cylinder << 8) | sector), "d"((head << 8) | drive)
+        : "cc", "memory"
+    );
+}
+
+// Parse the config.ini file
+void parse_config() {
+    find_verbose_mode();
+}
+
+// Find the verbose_mode setting in the config.ini file
+void find_verbose_mode() {
+    const char *verbose_mode_str = "verbose_mode";
+    char *ptr = config_buffer;
+
+    while (*ptr) {
+        if (strncmp(ptr, verbose_mode_str, strlen(verbose_mode_str)) == 0) {
+            ptr += strlen(verbose_mode_str);
+            if (*ptr == '=') {
+                ptr++;
+                if (strncmp(ptr, "true", 4) == 0) {
+                    verbose_mode = true;
+                } else {
+                    verbose_mode = false;
+                }
+                return;
+            }
+        }
+        ptr++;
     }
 }

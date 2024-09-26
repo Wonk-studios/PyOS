@@ -8,8 +8,8 @@ LDFLAGS = -m elf_i386 -T linker.ld
 
 BOOTLOADER_SRC = boot/bootloader.asm
 BOOTLOADER_BIN = bootloader.bin
-KERNEL_SRC = src/kernel.asm
-KERNEL_BIN = kernel.bin
+KERNEL_SRC = src/kernel.c
+KERNEL_OBJ = kernel.o
 ERROR_DUMP_SRC = src/error_dump.asm
 ERROR_DUMP_OBJ = error_dump.o
 KERNEL_TERMINAL_SRC = src/kernel-terminal.c
@@ -18,6 +18,8 @@ BOOTLOADER_TERMINAL_SRC = boot/bootloader-terminal.asm
 BOOTLOADER_TERMINAL_BIN = bootloader-terminal.bin
 INTERPRETER_SRC = src/interpreter.c
 INTERPRETER_BIN = interpreter.bin
+SETUP_SRC = src/setup.c
+SETUP_OBJ = setup.o
 OS_IMAGE = os_image.bin
 ISO_IMAGE = os_image.iso
 
@@ -32,9 +34,9 @@ $(BOOTLOADER_BIN): $(BOOTLOADER_SRC)
 $(BOOTLOADER_TERMINAL_BIN): $(BOOTLOADER_TERMINAL_SRC)
 	$(AS) $(ASFLAGS) -o $@ $<
 
-# Assemble the kernel
-$(KERNEL_BIN): $(KERNEL_SRC) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ)
-	$(AS) $(ASFLAGS) -o $@ $<
+# Compile the kernel
+$(KERNEL_OBJ): $(KERNEL_SRC)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Assemble the error dump
 $(ERROR_DUMP_OBJ): $(ERROR_DUMP_SRC)
@@ -48,9 +50,13 @@ $(KERNEL_TERMINAL_OBJ): $(KERNEL_TERMINAL_SRC)
 $(INTERPRETER_BIN): $(INTERPRETER_SRC)
 	$(CC) $(CFLAGS) -o $@ $<
 
-# Link the kernel, error dump, and kernel terminal
-kernel: $(KERNEL_BIN) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ)
-	$(LD) $(LDFLAGS) -o $@ $(KERNEL_BIN) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ)
+# Compile the setup
+$(SETUP_OBJ): $(SETUP_SRC)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# Link the kernel, error dump, kernel terminal, and setup
+kernel: $(KERNEL_OBJ) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(SETUP_OBJ)
+	$(LD) $(LDFLAGS) -o $@ $(KERNEL_OBJ) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(SETUP_OBJ)
 
 # Create the OS image
 $(OS_IMAGE): $(BOOTLOADER_BIN) $(BOOTLOADER_TERMINAL_BIN) kernel $(INTERPRETER_BIN)
@@ -70,5 +76,5 @@ $(ISO_IMAGE): $(OS_IMAGE)
 
 # Clean up the build files
 clean:
-	rm -f $(BOOTLOADER_BIN) $(BOOTLOADER_TERMINAL_BIN) $(KERNEL_BIN) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(INTERPRETER_BIN) kernel $(OS_IMAGE) $(ISO_IMAGE)
+	rm -f $(BOOTLOADER_BIN) $(BOOTLOADER_TERMINAL_BIN) $(KERNEL_OBJ) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(INTERPRETER_BIN) $(SETUP_OBJ) kernel $(OS_IMAGE) $(ISO_IMAGE)
 	rm -rf iso
