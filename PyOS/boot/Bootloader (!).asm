@@ -1,7 +1,7 @@
 [BITS 16]
 [ORG 0x7C00]
 
-;  THE REAL MODE BOOTLOADER IS NOT TO BE USED!
+;  The real mode bootloader has been depricated and will be deleted in the future.
 
 start:
     ; Set up stack and segment registers

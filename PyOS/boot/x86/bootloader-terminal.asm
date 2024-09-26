@@ -1,5 +1,5 @@
 BITS 16
-ORG 0x2000
+ORG 0x2000 ;this line has a parser issue (it's not a label)
 
 section .data
 VGA_TEXT_MODE_ADDRESS equ 0xB8000
