@@ -23,7 +23,7 @@ static void parse_config() {
 
 static void registry_handler(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version) {
     if (verbose_mode) {
-        printf("Got a registry event for %s id %d\n", interface, id);
+        printf("/bootdevice/ROOT/PyOS/SRC/wayland.o/.../> Got a registry event for %s id %d\n", interface, id);
     }
 }
 
@@ -40,7 +40,8 @@ int main() {
         fprintf(stderr, "Failed to connect to Wayland display\n");
         return -1;
     }
-
+	if (verbose_mode) {
+		printf("[Kernel] [Process: Display protocal] Getting registry, adding listeners...\n");
     struct wl_registry *registry = wl_display_get_registry(display);
     wl_registry_add_listener(registry, &registry_listener, NULL);
     wl_display_dispatch(display);

@@ -26,6 +26,8 @@ SETUP_SRC = src/setup.c
 SETUP_OBJ = setup.o
 INI_SRC = src/ini.c
 INI_OBJ = ini.o
+KEYBOARD_DRIVER_SRC = drivers/keyboard_driver.c
+KEYBOARD_DRIVER_OBJ = drivers/keyboard_driver.o
 OS_IMAGE = os_image.bin
 ISO_IMAGE = os_image.iso
 
@@ -72,9 +74,13 @@ $(SETUP_OBJ): $(SETUP_SRC)
 $(INI_OBJ): $(INI_SRC)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-# Link the kernel, error dump, kernel terminal, setup, and INI parser
-kernel: $(KERNEL_OBJ) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(SETUP_OBJ) $(INI_OBJ)
-	$(LD) $(LDFLAGS) -o $@ $(KERNEL_OBJ) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(SETUP_OBJ) $(INI_OBJ)
+# Compile the keyboard driver
+$(KEYBOARD_DRIVER_OBJ): $(KEYBOARD_DRIVER_SRC)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# Link the kernel, error dump, kernel terminal, setup, INI parser, and keyboard driver
+kernel: $(KERNEL_OBJ) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(SETUP_OBJ) $(INI_OBJ) $(KEYBOARD_DRIVER_OBJ)
+	$(LD) $(LDFLAGS) -o $@ $(KERNEL_OBJ) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(SETUP_OBJ) $(INI_OBJ) $(KEYBOARD_DRIVER_OBJ)
 
 # Create the OS image
 $(OS_IMAGE): $(BOOTMGR_BIN) $(ARM_BOOTLOADER_BIN) $(X86_BOOTLOADER_BIN) $(BOOTLOADER_TERMINAL_BIN) kernel $(INTERPRETER_BIN)
@@ -95,5 +101,5 @@ $(ISO_IMAGE): $(OS_IMAGE)
 
 # Clean up the build files
 clean:
-	rm -f $(BOOTMGR_BIN) $(ARM_BOOTLOADER_BIN) $(X86_BOOTLOADER_BIN) $(BOOTLOADER_BIN) $(BOOTLOADER_TERMINAL_BIN) $(KERNEL_OBJ) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(INTERPRETER_BIN) $(SETUP_OBJ) $(INI_OBJ) kernel $(OS_IMAGE) $(ISO_IMAGE)
+	rm -f $(BOOTMGR_BIN) $(ARM_BOOTLOADER_BIN) $(X86_BOOTLOADER_BIN) $(BOOTLOADER_BIN) $(BOOTLOADER_TERMINAL_BIN) $(KERNEL_OBJ) $(ERROR_DUMP_OBJ) $(KERNEL_TERMINAL_OBJ) $(INTERPRETER_BIN) $(SETUP_OBJ) $(INI_OBJ) $(KEYBOARD_DRIVER_OBJ) kernel $(OS_IMAGE) $(ISO_IMAGE)
 	rm -rf iso

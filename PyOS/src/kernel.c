@@ -45,12 +45,24 @@ void kernel_main() {
 
 	// Check if verbose_mode is true
 	if (verbose_mode) {
-		terminal_writestring("./ROOT/PyOS/SRC/kernel.o/.\n");
+		terminal_writestring("[Bootloader] [Process: Transfer] Transferring and mounting /bootdevice/ROOT/PyOS/SRC...\n");
 	}
 
 	// Check if show_message is true
 	if (show_message) {
 		terminal_writestring("PyOS 0.0.D, (DEVTEST VERSION!!!) (C) Wonk Studios, 2024 all rights reserved\n");
+	}
+
+	if (verbose_mode) {
+		terminal_writestring("[Kernel] [Process: Transfer] All files have been successfully transferred and mounted to /bootdevice/ROOT/PyOS/SRC. Bootloader may now terminate.\n");
+	}
+
+	if (verbose_mode) {
+		char address_str[20];
+		snprintf(address_str, sizeof(address_str), "%p", (void*)kernel_main);
+		terminal_writestring("[Kernel] [Process: Boot] Entering Kernel Main Loop at ");
+		terminal_writestring(address_str);
+		terminal_writestring("\n");
 	}
 
 	// Kernel main loop
@@ -59,9 +71,16 @@ void kernel_main() {
 	}
 }
 
+if(verbose_mode) {
+	terminal_writestring("[Kernel] [Process: Buffering] Buffering config.ini file...\n");
+
 // Buffer to hold the config.ini content
 #define CONFIG_BUFFER_SIZE 512
 char config_buffer[CONFIG_BUFFER_SIZE];
+
+if(verbose_mode) {
+	terminal_writestring("[Kernel] [Process: Saving] Storing settings...\n");
+}
 
 // Variables to store the settings
 bool verbose_mode = false;
@@ -83,7 +102,8 @@ void kernel_main() {
 
     // Check if verbose_mode is true
     if (verbose_mode) {
-        terminal_writestring("LOAD config.ini...\n");
+        terminal_writestring("[Kernel] [Process: Read/Load CFG] Reading config.INI\n");
+		terminal_writestring("[Kernel] [Process: Read/Load CFG] Loading config.INI\n");
     }
 
     // Kernel main loop
@@ -96,11 +116,23 @@ void kernel_main() {
 void load_config() {
     // Simplified example: Assume config.ini is at a known sector
     uint16_t segment = 0x1000;
+	if(verbose_mode) {
+		terminal_writestring("[Kernel] [Process: Memory] Segmenting memory...\n");
     uint16_t offset = 0x0000;
+	if(verbose_mode) {
+		terminal_writestring("[Kernel] [Process: Memory] Offsetting memory...\n");
     uint8_t drive = 0x80; // First hard drive
+	if(verbose_mode) {
+		terminal_writestring("[Kernel] [Process: Drive] Selecting drive...\n");
     uint8_t head = 0;
+	if(verbose_mode) {
+		terminal_writestring("[Kernel] [Process: Head] Selecting head...\n");
     uint8_t sector = 2;
+	if(verbose_mode) {
+		terminal_writestring("[Kernel] [Process: Sector] Selecting sector...\n");
     uint8_t cylinder = 0;
+	if(verbose_mode) {
+		terminal_writestring("[Kernel] [Process: Cylinder] Selecting cylinder...\n");
     uint8_t num_sectors = 1;
 
     asm volatile (

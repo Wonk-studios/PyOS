@@ -158,7 +158,7 @@ create_stack_dump:
     call print_string
     ret
 
-boot_msg db 'ESC for terminal...', 0
+boot_msg db 'ESC for x86 terminal...', 0
 fatal_invalid_boot_sector_error db 'FATAL VH007: ILLEGAL BOOT SECTOR AT 0x7C00. HLT', 0
 fatal_corrupted_file_system_error db 'FATAL VH008: FILESYSTEM_CORRUPT  AT 0x7C00. HLT', 0
 fatal_hardware_failure_error db 'FATAL VH009: HARDWARE_FAIL 0x7C00. HLT', 0

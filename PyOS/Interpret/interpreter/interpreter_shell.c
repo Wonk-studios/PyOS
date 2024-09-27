@@ -37,7 +37,7 @@ void shell_loop() {
         } else if (strcmp(input, "exit") == 0) {
             status = false;
         } else {
-            printf("Unknown command: %s\n", input);
+            printf("ILLEGAL: %s\n", input);
         }
 
         free(input);

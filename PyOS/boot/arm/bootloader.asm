@@ -130,10 +130,10 @@ print_string:
 .equ VGA_WHITE_ON_BLACK, 0x0F00
 
 boot_msg:
-	.asciz "ESC for terminal..."
+	.asciz "ESC for terminal on ARM_ARCH... ..."
 
 fatal_disk_read_error:
-	.asciz "FATAL VH001: FAILED TO READ DISK 0x7C00. HLT"
+	.asciz "FATAL STOP ERROR: FAILED TO READ DISK 0x7C00. HLT"
 
 fatal_config_parse_error:
 	.asciz "FATAL VH002: CONFIG PARSE ERROR 0x7C10. HLT"
