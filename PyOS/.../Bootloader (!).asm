@@ -1,7 +1,7 @@
 [BITS 16]
 [ORG 0x7C00]
 
-;  The real mode bootloader has been depricated and will be deleted in the future.
+;The real mode bootloader has been depricated and is no longer used in the PyOS project. It only supports the x86 architecture.
 
 start:
     ; Set up stack and segment registers

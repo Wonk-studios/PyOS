@@ -3,6 +3,62 @@
 #include <stddef.h>
 #include "terminal.h"
 
+bool show_message = false;
+
+void find_show_message();
+
+void parse_config() {
+	find_verbose_mode();
+	find_show_message();
+}
+
+void find_show_message() {
+	const char *show_message_str = "show_message";
+	char *ptr = config_buffer;
+
+	while (*ptr) {
+		if (strncmp(ptr, show_message_str, strlen(show_message_str)) == 0) {
+			ptr += strlen(show_message_str);
+			if (*ptr == '=') {
+				ptr++;
+				if (strncmp(ptr, "true", 4) == 0) {
+					show_message = true;
+				} else {
+					show_message = false;
+				}
+				return;
+			}
+		}
+		ptr++;
+	}
+}
+
+void kernel_main() {
+	// Initialize terminal
+	terminal_initialize();
+
+	// Load the config.ini file from disk
+	load_config();
+
+	// Parse the config.ini file
+	parse_config();
+
+	// Check if verbose_mode is true
+	if (verbose_mode) {
+		terminal_writestring("./ROOT/PyOS/SRC/kernel.o/.\n");
+	}
+
+	// Check if show_message is true
+	if (show_message) {
+		terminal_writestring("PyOS 0.0.D, (DEVTEST VERSION!!!) (C) Wonk Studios, 2024 all rights reserved\n");
+	}
+
+	// Kernel main loop
+	while (1) {
+		// Kernel operations
+	}
+}
+
 // Buffer to hold the config.ini content
 #define CONFIG_BUFFER_SIZE 512
 char config_buffer[CONFIG_BUFFER_SIZE];
@@ -27,7 +83,7 @@ void kernel_main() {
 
     // Check if verbose_mode is true
     if (verbose_mode) {
-        terminal_writestring("Verbose mode enabled.\n");
+        terminal_writestring("LOAD config.ini...\n");
     }
 
     // Kernel main loop

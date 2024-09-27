@@ -63,7 +63,7 @@ isr0:
     iretq
 
 section .rodata
-isr0_msg db 'Divide by zero error.', 0
+isr0_msg db 'FATAL VH003: VAR/0 IS NOT A VALID EXPRESSION! CANNOT DIVIDE BY ZERO! HLT'.', 0
 
 section .text
 global isr0_handler

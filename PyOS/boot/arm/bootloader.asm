@@ -102,8 +102,8 @@ print_string:
 .done:
     bx lr
 
-VGA_TEXT_MODE_ADDRESS = 0xB8000
-VGA_WHITE_ON_BLACK = 0x0F00
+.equ VGA_TEXT_MODE_ADDRESS, 0xB8000
+.equ VGA_WHITE_ON_BLACK, 0x0F00
 
 boot_msg:
     .asciz "ESC for terminal..."
@@ -115,4 +115,5 @@ config_buffer:
     .space 512
 
 .section .bss
+.bss_space:
     .space 512
