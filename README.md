@@ -1,12 +1,16 @@
 # PyOS
 
-PyOs.
+PyOs
 
 PyOS is a rudimentary python interpreter operating system I started in 2024 as a hobby project and wrote by myself. It allows you to paint off the canvas, and take your projects next level.
 
 >[!IMPORTANT]
 >The operating system has not been fully written. Do not download the operating system until it has been written.
 >THIS PROJECT IS WORK IN PROGRESS!
+
+# PyOS user manual
+
+Welcome to the PyOS user manual. This guide is designed to help you get started with PyOS, from initial setup to advanced configuration. Whether you are a beginner or an experienced developer, this manual will provide you with the necessary information to effectively use and customize PyOS to suit your needs.
 
 ## 1. How to use:
 
@@ -48,9 +52,26 @@ For nerds:
 - Network interface card (NIC) with PXE boot capability
 - Serial console redirection support
 
-## 2. Error guide
+### 2. Advanced Configuration
 
-### 2A. Bootloader errors:
+#### 2A. Customizing the Bootloader
+You can customize the bootloader by modifying the configuration file located at `/workspaces/PyOS/PyOS/bootloader/config.cfg`. This file allows you to set various parameters such as the default boot entry, timeout, and graphical settings.
+
+#### 2B. Kernel Parameters
+Kernel parameters can be adjusted by editing the `/workspaces/PyOS/PyOS/kernel/params.cfg` file. These parameters control the behavior of the kernel, including memory management, process scheduling, and hardware interaction.
+
+#### 2C. User Interface Themes
+PyOS supports custom user interface themes. To create a new theme, add your theme files to the `/workspaces/PyOS/PyOS/ui/themes/` directory and update the `theme.cfg` file to include your new theme.
+
+#### 2D. Network Configuration
+Network settings can be configured by editing the `/workspaces/PyOS/PyOS/network/config.cfg` file. This includes setting static IP addresses, configuring DNS servers, and managing network interfaces.
+
+#### 2E. Security Settings
+Security settings are managed through the `/workspaces/PyOS/PyOS/security/security.cfg` file. Here you can configure user permissions, firewall rules, and encryption settings to enhance the security of your PyOS installation.
+
+## 3. Error guide
+
+### 3A. Bootloader errors:
 ### ARM bootloader:
 
 #### FATAL STOP ERROR: FAILED TO READ DISK 0x7C00. HLT
@@ -564,3 +585,140 @@ For nerds:
 2. Verify the I/O operations.
 
 ### Kernel errors
+
+### 3B. Kernel Error Guide
+
+#### ERROR VH05 UNKNOWN KERNEL ERROR. MANUAL REBOOT REQUIRED. STOP.
+**Error Message:** ERROR VH05 UNKNOWN KERNEL ERROR. MANUAL REBOOT REQUIRED. STOP.
+
+**Description:** This error occurs when the kernel encounters an unknown error that it cannot handle.
+
+**Possible Causes:**
+- Unhandled exception in the kernel.
+- Corrupted kernel code.
+
+**Troubleshooting Steps:**
+1. Check the kernel code for unhandled exceptions.
+2. Verify the integrity of the kernel code.
+3. Reboot the system manually.
+
+#### Error VH21: KERNEL INITIALIZATION ERROR. MANUAL REBOOT REQUIRED. STOP.
+**Error Message:** Error VH21: KERNEL INITIALIZATION ERROR. MANUAL REBOOT REQUIRED. STOP.
+
+**Description:** This error occurs when the kernel fails to initialize properly.
+
+**Possible Causes:**
+- Missing or corrupted kernel components.
+- Incorrect kernel configuration.
+
+**Troubleshooting Steps:**
+1. Verify the presence and integrity of all kernel components.
+2. Check the kernel configuration for errors.
+3. Reboot the system manually.
+
+#### Error VH22: MEMORY ALLOCATION ERROR. MANUAL REBOOT REQUIRED. STOP.
+**Error Message:** Error VH22: MEMORY ALLOCATION ERROR. MANUAL REBOOT REQUIRED. STOP.
+
+**Description:** This error occurs when the kernel fails to allocate the necessary memory.
+
+**Possible Causes:**
+- Insufficient memory available.
+- Memory allocation function is not implemented correctly.
+
+**Troubleshooting Steps:**
+1. Ensure sufficient memory is available.
+2. Verify the memory allocation function.
+3. Reboot the system manually.
+
+#### ERROR STOP.
+**Error Message:** ERROR STOP.
+
+**Description:** This error occurs when the kernel encounters a critical error that requires an immediate stop.
+
+**Possible Causes:**
+- Critical system failure.
+- Unrecoverable error.
+
+**Troubleshooting Steps:**
+1. Check the system for critical failures.
+2. Verify the integrity of the system components.
+3. Reboot the system manually.
+
+#### Failed to connect to Wayland display
+**Error Message:** Failed to connect to Wayland display
+
+**Description:** This error occurs when the application fails to connect to the Wayland display server.
+
+**Possible Causes:**
+- Wayland display server is not running.
+- Incorrect display server address.
+
+**Troubleshooting Steps:**
+1. Ensure the Wayland display server is running.
+2. Verify the display server address.
+
+#### wl_display_get_registry failed
+**Error Message:** wl_display_get_registry failed
+
+**Description:** This error occurs when the application fails to get the Wayland display registry.
+
+**Possible Causes:**
+- Display connection is invalid.
+- Wayland display server issue.
+
+**Troubleshooting Steps:**
+1. Verify the display connection.
+2. Check the Wayland display server for issues.
+
+#### wl_registry_add_listener failed
+**Error Message:** wl_registry_add_listener failed
+
+**Description:** This error occurs when the application fails to add a listener to the Wayland registry.
+
+**Possible Causes:**
+- Invalid registry object.
+- Listener function is not implemented correctly.
+
+**Troubleshooting Steps:**
+1. Verify the registry object.
+2. Ensure the listener function is implemented correctly.
+
+#### wl_display_dispatch failed
+**Error Message:** wl_display_dispatch failed
+
+**Description:** This error occurs when the application fails to dispatch Wayland display events.
+
+**Possible Causes:**
+- Display connection is invalid.
+- Wayland display server issue.
+
+**Troubleshooting Steps:**
+1. Verify the display connection.
+2. Check the Wayland display server for issues.
+
+#### wl_display_roundtrip failed
+**Error Message:** wl_display_roundtrip failed
+
+**Description:** This error occurs when the application fails to complete a roundtrip to the Wayland display server.
+
+**Possible Causes:**
+- Display connection is invalid.
+- Wayland display server issue.
+
+**Troubleshooting Steps:**
+1. Verify the display connection.
+2. Check the Wayland display server for issues.
+
+#### wl_display_disconnect failed
+**Error Message:** wl_display_disconnect failed
+
+**Description:** This error occurs when the application fails to disconnect from the Wayland display server.
+
+**Possible Causes:**
+- Display connection is invalid.
+- Wayland display server issue.
+
+**Troubleshooting Steps:**
+1. Verify the display connection.
+2. Check the Wayland display server for issues.
+
