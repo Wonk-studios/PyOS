@@ -12,7 +12,7 @@ gdt64_ptr:
     dq 0
 
 ; Error messages
-kernel_msg db '...bootdevice/ROOT/PyOS/SRC/kernel.bin/...> ESC to enter terminal.', 0
+kernel_msg db 'ESC to enter terminal.', 0
 kernel_error_msg db 'ERROR VH05 UNKNOWN KERNEL ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
 kernel_initialization_error_msg db 'Error VH21: KERNEL INITIALIZATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0
 memory_allocation_error_msg db 'Error VH22: MEMORY ALLOCATION ERROR. MANUAL REBOOT REQUIRED. STOP.', 0

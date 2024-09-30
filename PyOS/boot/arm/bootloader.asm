@@ -6,6 +6,8 @@ _start:
 
 reset:
 	ldr sp, =0x8000          @ Set up stack pointer
+	ldr r0, =0               @ Initialize r0 to 0
+	strb r0, show_message    @ Initialize show_message to 0
 	bl load_config           @ Load the config.ini file from disk
 	bl parse_config          @ Parse the config.ini file
 
@@ -26,14 +28,16 @@ load_config:
 	bx lr
 
 read_disk:
-	@ Assuming read_disk is a function that reads from disk into r0 buffer
-	@ This is a placeholder for actual disk read implementation
+	@ Placeholder for actual disk read implementation
 	@ Replace with actual disk read code
 	mov r1, #512  @ Number of bytes to read
 	bl disk_read  @ Call disk read function
 	cmp r0, #0    @ Check if read was successful
-	bne disk_read_error_handle
-	bx lr
+	beq disk_read_success
+	b disk_read_error_handle
+
+disk_read_success:
+	bx lr    @ Return from subroutine
 
 disk_read_error_handle:
 	ldr r0, =fatal_disk_read_error
@@ -75,28 +79,30 @@ config_value_error:
 	bx lr
 
 find_string:
-	push {r0, r1, r2, r3}
-
-next_char:
+	push {r0, r1, r2, r3, lr}
+find_string_loop:
 	ldrb r2, [r0], #1
 	cmp r2, #0
 	beq not_found
 	ldrb r3, [r1], #1
+	cmp r3, #0
+	beq found
 	cmp r2, r3
 	bne next_char
 	add r1, r1, #1
-	ldrb r3, [r1]
-	cmp r3, #0
-	beq found
-	sub r1, r1, #1
-	b next_char
+	b find_string_loop
+
+next_char:
+	add r0, r0, #1
+	b find_string_loop
 
 found:
 	sub r0, r0, r1
-	pop {r0, r1, r2, r3}
+	pop {r1, r2, r3, lr}
 	bx lr
 
 not_found:
+	pop {r1, r2, r3, lr}
 	ldr r0, =fatal_string_not_found
 	bl handle_error
 	bx lr
@@ -109,20 +115,24 @@ dump_registers:
 
 show_message_str:
 	.asciz "show_message"
-show_message:
-	.byte 0
 
+.section .bss
+show_message:
+	.space 1
 print_string:
+	push {r1, r2, r3, lr}
 	ldr r1, =VGA_TEXT_MODE_ADDRESS
 	mov r2, #VGA_WHITE_ON_BLACK
+print_string_loop:
+	ldrb r3, [r0], #1
+	cmp r3, #0
+	beq print_string_done
+	strh r3, [r1], #2
+	b print_string_loop
 
-.next_char:
-	ldrb r0, [r0], #1
-	cmp r0, #0
-	beq .done
-	strh r0, [r1], #2
-	b .next_char
-
+print_string_done:
+	pop {r1, r2, r3, lr}
+	bx lr
 .done:
 	bx lr
 
