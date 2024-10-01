@@ -51,6 +51,15 @@ For nerds:
 - Support for virtualization (VT-x or AMD-V)
 - Network interface card (NIC) with PXE boot capability
 - Serial console redirection support
+- BIOS: Legacy BIOS or UEFI with CSM (Compatibility Support Module)
+- Graphics: VGA-compatible graphics card
+- Storage: SSD recommended for faster boot times
+- USB: At least one USB 2.0 or higher port
+- Audio: Sound card with AC97 or HD Audio support
+- Peripherals: Keyboard and mouse
+- Display: Monitor with a minimum resolution of 1024x768
+- Network: Ethernet or Wi-Fi adapter
+- Power: Uninterruptible Power Supply (UPS) recommended for critical systems
 
 ### 2. Advanced Configuration
 
