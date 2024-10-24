@@ -25,18 +25,28 @@ bool load_kernel_x86(const char *kernel_path) {
 
 // Function to jump to the kernel for x86 architecture
 void jump_to_kernel_x86() {
+    // Define a function pointer to the kernel entry point
+    void (*kernel_entry)() = (void (*)())KERNEL_LOAD_ADDRESS;
+
+    // Disable interrupts
+    asm volatile ("cli");
+
+    // Set up segment registers
     asm volatile (
-        "cli\n"
         "mov $0x10, %%ax\n"
         "mov %%ax, %%ds\n"
         "mov %%ax, %%es\n"
         "mov %%ax, %%fs\n"
         "mov %%ax, %%gs\n"
         "mov %%ax, %%ss\n"
-        "mov $0x100000, %%esp\n"
-        "jmp $0x08, $0x100000\n"
         :
         :
-        : "memory"
+        : "ax"
     );
+
+    // Set up the stack
+    asm volatile ("mov $0x100000, %esp");
+
+    // Jump to the kernel entry point
+    kernel_entry();
 }
