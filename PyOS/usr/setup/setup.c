@@ -3,8 +3,8 @@
 #include <string.h>
 
 #define MAX_LINE_LENGTH 256
-#define INI_FILE_PATH "/workspaces/PyOS-Pro-ED/PyOS/usr/setup/settings.ini"
-#define TEMP_FILE_PATH "/workspaces/PyOS-Pro-ED/PyOS/usr/setup/temp.ini"
+#define INI_FILE_PATH "root/usr/setup/settings.ini"
+#define TEMP_FILE_PATH "root/usr/setup/temp.ini"
 
 void display_settings() {
     FILE *file = fopen(INI_FILE_PATH, "r");
