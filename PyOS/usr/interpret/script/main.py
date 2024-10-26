@@ -5,5 +5,5 @@ def get_input():
     print(user_input);
 
 if __name__ == "__main__":
-while True:
-    get_input();
+    while True:
+        get_input();
